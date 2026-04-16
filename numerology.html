@@ -1,0 +1,833 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>生命数字密码 - Numerology</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            font-family: 'Segoe UI', 'Microsoft YaHei', sans-serif;
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+            min-height: 100vh;
+            color: #fff;
+            padding: 20px;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        h1 {
+            text-align: center;
+            font-size: 2.5em;
+            margin-bottom: 10px;
+            background: linear-gradient(90deg, #f093fb, #f5576c);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        .subtitle {
+            text-align: center;
+            color: #888;
+            margin-bottom: 30px;
+        }
+        .input-section {
+            background: rgba(255,255,255,0.1);
+            border-radius: 20px;
+            padding: 30px;
+            margin-bottom: 30px;
+            backdrop-filter: blur(10px);
+        }
+        .input-group {
+            display: flex;
+            gap: 20px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+        .input-field {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+        .input-field label {
+            color: #ccc;
+            font-size: 0.9em;
+        }
+        .input-field input, .input-field select {
+            padding: 12px 20px;
+            border: 2px solid rgba(255,255,255,0.2);
+            border-radius: 10px;
+            background: rgba(255,255,255,0.1);
+            color: #fff;
+            font-size: 1.1em;
+            width: 120px;
+            text-align: center;
+        }
+        .input-field input:focus, .input-field select:focus {
+            outline: none;
+            border-color: #f5576c;
+        }
+        .btn-calculate {
+            display: block;
+            margin: 30px auto 0;
+            padding: 15px 50px;
+            background: linear-gradient(90deg, #f093fb, #f5576c);
+            border: none;
+            border-radius: 30px;
+            color: #fff;
+            font-size: 1.2em;
+            cursor: pointer;
+            transition: transform 0.3s, box-shadow 0.3s;
+        }
+        .btn-calculate:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 10px 30px rgba(245,87,108,0.4);
+        }
+        .result-section {
+            display: none;
+        }
+        .result-section.active {
+            display: block;
+        }
+        .numbers-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+        .number-card {
+            background: rgba(255,255,255,0.1);
+            border-radius: 15px;
+            padding: 20px;
+            text-align: center;
+            transition: transform 0.3s;
+        }
+        .number-card:hover {
+            transform: translateY(-5px);
+        }
+        .number-card .label {
+            color: #888;
+            font-size: 0.9em;
+            margin-bottom: 5px;
+        }
+        .number-card .value {
+            font-size: 2em;
+            font-weight: bold;
+            background: linear-gradient(90deg, #f093fb, #f5576c);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        .number-card .value.master {
+            background: linear-gradient(90deg, #ffd700, #ff8c00);
+            -webkit-background-clip: text;
+        }
+        .nine-grid {
+            background: rgba(255,255,255,0.1);
+            border-radius: 20px;
+            padding: 30px;
+            margin-bottom: 30px;
+            text-align: center;
+        }
+        .nine-grid h2 {
+            text-align: center;
+            margin-bottom: 20px;
+            color: #f093fb;
+        }
+        .grid-container {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 15px;
+            max-width: 400px;
+            margin: 0 auto;
+        }
+        .grid-cell {
+            aspect-ratio: 1;
+            background: rgba(255,255,255,0.15);
+            border-radius: 15px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            font-size: 1.5em;
+            font-weight: bold;
+            min-height: 100px;
+        }
+        .grid-cell .num-label {
+            font-size: 0.8em;
+            color: #888;
+            margin-bottom: 5px;
+        }
+        .grid-cell .count {
+            position: absolute;
+            top: 5px;
+            right: 10px;
+            font-size: 0.6em;
+            color: #f5576c;
+        }
+        .grid-cell.has-number {
+            background: linear-gradient(135deg, rgba(240,147,251,0.3), rgba(245,87,108,0.3));
+        }
+        .grid-cell.empty {
+            background: rgba(255,255,255,0.05);
+            opacity: 0.5;
+        }
+        .lines-section {
+            background: rgba(255,255,255,0.1);
+            border-radius: 20px;
+            padding: 30px;
+            margin-bottom: 30px;
+        }
+        .lines-section h2 {
+            text-align: center;
+            margin-bottom: 20px;
+            color: #f093fb;
+        }
+        .lines-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 15px;
+        }
+        .line-card {
+            background: rgba(255,255,255,0.1);
+            border-radius: 15px;
+            padding: 20px;
+        }
+        .line-card.active {
+            background: linear-gradient(135deg, rgba(240,147,251,0.3), rgba(245,87,108,0.3));
+            border: 2px solid #f5576c;
+        }
+        .line-card .name {
+            font-size: 1.2em;
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+        .line-card .desc {
+            color: #aaa;
+            font-size: 0.9em;
+            line-height: 1.6;
+        }
+        .missing-section {
+            background: rgba(255,255,255,0.1);
+            border-radius: 20px;
+            padding: 30px;
+            margin-bottom: 30px;
+        }
+        .missing-section h2 {
+            text-align: center;
+            margin-bottom: 20px;
+            color: #f093fb;
+        }
+        .missing-grid {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 15px;
+            justify-content: center;
+        }
+        .missing-card {
+            background: rgba(255,255,255,0.1);
+            border-radius: 15px;
+            padding: 20px;
+            width: 200px;
+        }
+        .missing-card .num {
+            font-size: 1.5em;
+            font-weight: bold;
+            color: #f5576c;
+            margin-bottom: 10px;
+        }
+        .missing-card .advice {
+            color: #aaa;
+            font-size: 0.85em;
+            line-height: 1.6;
+        }
+        .traits-section {
+            background: rgba(255,255,255,0.1);
+            border-radius: 20px;
+            padding: 30px;
+            margin-bottom: 30px;
+        }
+        .traits-section h2 {
+            text-align: center;
+            margin-bottom: 20px;
+            color: #f093fb;
+        }
+        .traits-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+        }
+        .trait-card {
+            background: rgba(255,255,255,0.1);
+            border-radius: 15px;
+            padding: 25px;
+        }
+        .trait-card .num {
+            font-size: 1.8em;
+            font-weight: bold;
+            margin-bottom: 15px;
+        }
+        .trait-card .title {
+            color: #f093fb;
+            margin-bottom: 10px;
+            font-size: 1.1em;
+        }
+        .trait-card .content {
+            color: #aaa;
+            font-size: 0.9em;
+            line-height: 1.8;
+        }
+        .year-prediction {
+            background: linear-gradient(135deg, rgba(240,147,251,0.2), rgba(245,87,108,0.2));
+            border-radius: 20px;
+            padding: 30px;
+            margin-bottom: 30px;
+            border: 2px solid #f5576c;
+        }
+        .year-prediction h2 {
+            text-align: center;
+            margin-bottom: 20px;
+            color: #f093fb;
+        }
+        .year-prediction .year-num {
+            text-align: center;
+            font-size: 3em;
+            font-weight: bold;
+            margin-bottom: 15px;
+        }
+        .year-prediction .phase {
+            text-align: center;
+            color: #f5576c;
+            font-size: 1.2em;
+            margin-bottom: 15px;
+        }
+        .year-prediction .desc {
+            color: #aaa;
+            line-height: 1.8;
+            text-align: center;
+            max-width: 600px;
+            margin: 0 auto;
+        }
+        @media (max-width: 600px) {
+            .input-group {
+                flex-direction: column;
+                align-items: center;
+            }
+            h1 {
+                font-size: 1.8em;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>生命数字密码</h1>
+        <p class="subtitle">探索你的生命天赋与人生使命</p>
+        
+        <div class="input-section">
+            <div class="input-group">
+                <div class="input-field">
+                    <label>出生年</label>
+                    <input type="number" id="year" placeholder="YYYY" min="1900" max="2026" value="1990">
+                </div>
+                <div class="input-field">
+                    <label>出生月</label>
+                    <input type="number" id="month" placeholder="MM" min="1" max="12" value="1">
+                </div>
+                <div class="input-field">
+                    <label>出生日</label>
+                    <input type="number" id="day" placeholder="DD" min="1" max="31" value="1">
+                </div>
+            </div>
+            <button class="btn-calculate" onclick="calculate()">开始计算</button>
+        </div>
+        
+        <div class="result-section" id="result">
+            <div class="numbers-grid">
+                <div class="number-card">
+                    <div class="label">命运数（生命路径）</div>
+                    <div class="value" id="destinyNum">-</div>
+                </div>
+                <div class="number-card">
+                    <div class="label">生日数</div>
+                    <div class="value" id="birthdayNum">-</div>
+                </div>
+                <div class="number-card">
+                    <div class="label">天赋数</div>
+                    <div class="value" id="talentNum">-</div>
+                </div>
+                <div class="number-card">
+                    <div class="label">星座数</div>
+                    <div class="value" id="constellationNum">-</div>
+                </div>
+                <div class="number-card">
+                    <div class="label">卓越数</div>
+                    <div class="value master" id="masterNum">-</div>
+                </div>
+                <div class="number-card">
+                    <div class="label">当前流年</div>
+                    <div class="value" id="currentYear">-</div>
+                </div>
+            </div>
+            
+            <div class="nine-grid">
+                <h2>九宫命盘</h2>
+                <div class="nine-grid-wrapper" style="position:relative;display:inline-block;">
+                    <div class="grid-container" id="nineGrid"></div>
+                    <svg id="linesSvg" style="position:absolute;top:0;left:0;width:100%;height:100%;pointer-events:none;"></svg>
+                </div>
+                <p style="text-align:center;margin-top:20px;color:#888;font-size:0.9em">数字上方的圈数代表该数字在生日中出现的次数</p>
+            </div>
+            
+            <div class="traits-section">
+                <h2>数字特质解析</h2>
+                <div class="traits-grid" id="traitsGrid"></div>
+            </div>
+            
+            <div class="lines-section">
+                <h2>连线特质</h2>
+                <div class="lines-grid" id="linesGrid"></div>
+            </div>
+            
+            <div class="missing-section" id="missingSection">
+                <h2>缺数特质</h2>
+                <div class="missing-grid" id="missingGrid"></div>
+            </div>
+            
+            <div class="year-prediction" id="yearPrediction">
+                <h2>流年预测</h2>
+                <div class="year-num" id="yearNum">-</div>
+                <div class="phase" id="yearPhase">-</div>
+                <div class="desc" id="yearDesc">-</div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const MASTER_NUMBERS = [11, 22, 33, 44];
+        
+        const NUM_TRAITS = {
+            1: { title: "开创者与独立领袖", content: "1号人是天生的领��者与拓荒者，其能量核心在于独立、自主和强烈的目标感。他们拥有极佳的开创性思维，在职场中通常不愿受人指使，更适合担任创业者、主管或开发人员。这种「想到就做」的行动派特质，使他们在危机中往往能成为众人的依靠。然而，1号人的负面倾向在于过度的自我中心。当能量失衡时，他们可能表现得固执、独断，甚至为了达成目标而表现出攻击性或不耐烦。", color: "#ff6b6b" },
+            2: { title: "协调者与温和外交官", content: "2号人是天生的和平维护者，具备极强的同理心与沟通天赋。2号人天生敏感，能敏锐地捕捉到空气中细微的情绪波动，这使他们成为优秀的协调者与谈判专家。他们在艺术美感、心理咨询、人力资源等需要细腻人际互动的领域具有巨大潜力。负面特质方面，2号人由于过于依赖合作，往往显得缺乏主见且容易犹豫不决。他们常因害怕冲突而过度迎合他人，导致自己的真实需求被长期压抑。", color: "#ffa502" },
+            3: { title: "表达者与创意顽童", content: "3号人是人群中的光源与创意工厂，充满了乐观精神与幽默感。数字3象征着调解对立、建立关系的第三股灵性力量。3号人对艺术有极高的敏锐度，擅长用充满活力的方式传达想法，非常适合公关、媒体、表演或创意产业。由于追求新鲜感和关注，3号人有时会显得虚荣、散漫或情绪化，容易在一段关系中显得忽冷忽热。", color: "#ffd43b" },
+            4: { title: "建构者与务实职人", content: "4号人是社会结构的基石，他们追求稳定、秩序与绝对的安全感。4号人实事求是，极度重视细节与规范，是团队中最可靠的质量把关者，适合从事金融、工程、专案管理或研究分析。他们做事条理分明，能在压力下保持冷静，是典型的「模范生」。这种对稳定的极度追求也可能让4号人陷入保守与固执的陷阱。", color: "#26de81" },
+            5: { title: "探索者与自由灵魂", content: "5号人是冒险精神的化身，他们对世界充满好奇，拒绝任何形式的束缚。5号人多才多艺、能言善道，人生的核心目的在于创造属于自己的舞台。他们极具说服力，在销售、旅游、媒体及自由职业领域如鱼得水。然而，5号人的挑战在于缺乏专注力与责任感。由于厌恶单调，他们容易因为追求新鲜感而频繁更换赛道。", color: "#45aaf2" },
+            6: { title: "守护者与疗愈天使", content: "6号人被视为爱与责任的化身，具备强烈的正义感与奉献精神。6号人是天生的照料者，他们不需要请求就会主动为他人解决困难，适合从事教育、医疗、社会工作或艺术治疗。负面表现上，6号人容易陷入完美主义与过分牺牲的漩涡。", color: "#a55eea" },
+            7: { title: "思考者与真理寻觅者", content: "7号人是深沉的分析专家与哲学家，他们对事物的本质有着近乎偏执的探索欲。7号人直觉极其敏锐，喜欢质疑表面现象，更倾向于在独处中寻找真理。他们在科研、工程、神秘学及策略规划方面极具天赋。由于长期处于思维的高地，7号人常给人以冷漠或疏离感。", color: "#8854d0" },
+            8: { title: "成就者与权力掌控者", content: "8号人是天生的商业奇才与实干家，他们对权力和财富有着极高的敏感度与掌控欲。8号人拥有强烈的野心与决断力，擅长整合资源并实现具体目标，是企业管理、投资及金融领域的统帅。其负面挑战主要源于对权力的执着与贪婪。", color: "#fa8231" },
+            9: { title: "博爱者与智慧开启者", content: "9号人被视为老灵魂，拥有1-8号���有���字的特质，是博爱的理想主义者。9号人学习力强，想象力丰富，是天马行空的梦想家，其事业理想通常与教育、慈善、艺术或灵性成长相关。然而，9号人常面临脱离现实与优柔寡断的困扰。", color: "#eb3b5a" }
+        };
+        
+        const MASTER_TRAITS = {
+            11: { title: "直觉启发者/灵訊传递者", content: "11号是数字2的强化版，这类人天生具有极强的直觉力，仿佛在意识与潜意识世界之间架起了一座桥梁。他们拥有深沉的内在认知，往往在事情尚未发生前就能感知到走向，因此常被称为「直觉启发者」。11号人的使命是通过直觉带来的启示去领导、教育或治愈他人。然而，高敏感度也带来了挑战，他们常在理智与直觉之间挣扎，容易陷入焦虑、疑虑或思绪涣散的困境。", color: "#ffd700" },
+            22: { title: "筑梦实践者/大师级建筑师", content: "22号是4的超级加倍版，被誉为灵数系统中最强大的数字。如果说4号是地基，那么22号就是能把宏伟蓝图变为现实的「大师级建筑师」。他们拥有极佳的生产力，能处理庞大的资源与系统，将看似不可能的梦想转化为造福人类的实体事业。这种能量的双刃剑在于「极端性」：当他们怀疑自身愿景时，可能会从巅峰坠入极度的不安全感中。", color: "#ff8c00" },
+            33: { title: "付出型包容者/大师级教师", content: "33号被视为最进化的灵性频率，是数字6的极致呈现。它代表了纯粹的爱与无条件的奉献，被定义为「大师级教师」和「终极照顾者」。33号人的存在是为了示范如何去爱——先学会爱自己，再将这种无私的慈悲延伸给整个世界。然而，33号人面临的「阴影」是容易过度牺牲自我。", color: "#ff69b4" },
+            44: { title: "系统建构者", content: "44是极其罕见的大师数，是数字8的高阶形态，融合了8号的资源组织力与卓越数的高纬度洞察力。44号人的格局非常宏大，具备建立跨时代系统或大型结构的潜力，是统计学上最复杂也最具潜力的类型。但也正因如此，44号人极易陷入对掌控欲的执着。", color: "#8b4513" }
+        };
+        
+        const MISSING_TRAITS = {
+            1: { advice: "在日常生活中练习从细小的事情开始自行做主。红色代表积极与行动，建议使用红石榴石或红虎眼石等红色配件，通过视觉刺激来唤醒内在的勇气与开创精神。", color: "#ff6b6b" },
+            2: { advice: "尝试站在他人角度思考问题，练习倾听。橙色与粉色能带来亲和力与温柔的视觉信号，建议配戴太阳石或粉晶，提醒自己保持情感的流动与柔软。", color: "#ffa502" },
+            3: { advice: "可以多参加绘画、写作等创作活动来抒发情感。黄色象征乐观与自信，通过黄水晶或钛晶的黄色能量，可以鼓励自己变得更活泼、更具表现力。", color: "#ffd43b" },
+            4: { advice: "练习从小目标开始制定具体的执行表。绿色象征稳定与平衡，建议使用绿幽灵或葡萄石，在视觉上帮助自己安定心神，建立秩序感。", color: "#26de81" },
+            5: { advice: "抱持开放心态尝试新事物，哪怕只是从换一条上班路线开始。蓝色象征自由与开阔，建议配戴海蓝宝或蓝晶石，以此提醒自己打破框架，探索生命更多的可能性。", color: "#45aaf2" },
+            6: { advice: "学习在细节中表达关怀，练习承担家庭重任。靛色与粉色代表深层洞察与奉献，配戴堇青石或草莓晶可以传达出温情与关爱的情感讯号。", color: "#a55eea" },
+            7: { advice: "建立冥想或独立阅读的习惯，学习质疑��面��象。紫色象征内敛智慧，通过紫水晶或拉长石，可以引导自己静心思考，提升逻辑辨析能力。", color: "#8854d0" },
+            8: { advice: "向具有积极心态的人学习，练习制定具体的理财与成功计划。黄色与紫色组合代表成就与眼光，通过配戴钛晶，可以增强自己的信心与对丰盛生活的追求。", color: "#fa8231" },
+            9: { advice: "参与公益活动或社区服务，拓展视野，学习奉献。白色代表包容与圆融，白水晶或月光石的洁净感可以帮助自己清理负面思绪，重新以宏观视角看待人生。", color: "#eb3b5a" }
+        };
+        
+        const LINES = {
+            "1-4-7": { name: "务实线", desc: "执行力强，脚踏实地。这类人通常脚踏实地，具备高度的自律能力与职人精神。他们相信「努力才有回报」，在工作中极少夸夸其谈，而是倾向于制定详尽的计划并坚决执行。在体育、工程或任何需要高体能与高专注度的领域，这类人都能表现出非凡的韧性。这条线又被称为「爱赚钱线」，因为它赋予了人们追求经济稳定的强烈动机与实现财富积累的具体行动力。", alt: "执行路径/运动线" },
+            "2-5-8": { name: "感情线", desc: "感受力强，善于沟通这类人通常文笔极佳，善于运用语言或文字打动人心，是天生的公关与社交达人。他们在人群中极具魅力，朋友遍天下，能轻而易举地建立起复杂的人际网络。数字能量强的人，内心通常充满了浪漫情怀，对生活品质与情感质量有着极高的追求。然而，由于其感官极其敏锐，这条线也被称为「情绪起伏线」。", alt: "心智力线" },
+            "3-6-9": { name: "智慧线", desc: "洞察力强，充满创意这类人具备卓越的学习能力，能从多角度观察事物，常能提出令人拍案叫绝的深刻见解。在教师、顾问、科学家或顶级策划者中，这条连线非常常见。然而，由于这条线完全由精神层面的数字组成，它也被戏称为「空想线」。如果缺乏务实数字的支撑，这类人很容易陷入「想得多、做得少」的怪圈。", alt: "空想线/创意线" },
+            "1-2-3": { name: "艺术线", desc: "审美敏锐，直觉强这类人拥有极高的审美天赋与创造潜能。他们对美有着极其敏锐的直觉，无论是绘画、设计、表演还是生活美学，都能展现出独特的个人风格。其弱点在于感性过载带来的脆弱性，艺术线能量过强的人往往情绪化严重。", alt: "美感线" },
+            "4-5-6": { name: "组织线", desc: "条理清晰，追求完美这类人做事情井然有序，具备极强的逻辑组织能力，擅长在规则与灵性之间寻找最佳平衡点。他们通常对自己和团队都有着极高的标准，是追求极致的完美主义者。然而，过度追求完美是这条线的致命伤。", alt: "完美主义线" },
+            "7-8-9": { name: "权力线", desc: "善于整合资源，具领导魅力这类人善于整合各种资源，具备天然的领导魅力。他们在商业和政治领域往往能够发挥重要作用。这条线的人通常具有远见卓识，能够把握全局。", alt: "领导线" },
+            "1-5-9": { name: "事业线", desc: "企图心强，爆发力足这条线是由极具动能的数字组成的事业引擎。它代表了开创者的动力、探索者的灵活性与理想主义者的视野，共同指向卓越的职业成就。拥有这条连线的人通常怀揣强烈的企图心，一旦锁定目标就会爆发出惊人的专注力。", alt: "执行成效线" },
+            "3-5-7": { name: "影响线", desc: "幽默感强，社交能力出色这条连线被称为魅力与社交的巅峰组合。它集结了创意表达、自由探索与深度自省的力量，使个体表现出极强的幽默感与亲和力。拥有此线的人往往是派对的灵魂，能够面面俱到地处理人际关系。", alt: "人缘线/沟通线" }
+        };
+        
+        const YEAR_PREDICTIONS = {
+            1: { phase: "启动与播种期", desc: "流年1是全新的开始，象征着能量最强、推进力最大的「人生重启」年份。这一年，心中酝酿已久的念头会被现实推到眼前，邀请你做出突破性的选择。注意：避免急功近利，不要因冲动忽略了现实条件或引发官司纠纷。" },
+            2: { phase: "协调与蛰伏期", desc: "经历了1号年的冲刺，流年2需要放慢节奏，进行水面下的静悄悄调整。这一年人际关系和合作机会会浮现，核心课题是耐心、觉察与协调。注意：不要因为害怕冲突而过度压抑自己。" },
+            3: { phase: "创意与萌芽期", desc: "这是创造力与社交表达力被点亮的一年，能量外放且灵感跃动。这非常适合内容创作、品牌曝光或社交拓展，你的独特视角很容易获得世界的回应。注意：挑战在于「说得太快、做得太急」，容易导致口舌是非或注意力分散。" },
+            4: { phase: "扎根与稳固期", desc: "流年4会将注意力拉回现实层面的责任与安全感。这一年你会更关注家庭、储蓄与长期的职业基础，渴望安定下来，是为未来打底的关键年。注意：由于现实压力，不安感与焦虑会被放大。" },
+            5: { phase: "变动与繁衍期", desc: "这是自由感最强、变动最大的一年，生命邀请你松开过去的包袱，换一种活法。这一年可能出现旅游、搬迁或职业转型，充满新鲜感与机会感。注意：自由需要界线，容易因为追求新鲜感而半途而废。" },
+            6: { phase: "责任与孕育期", desc: "流年6的重心是「人」本身，家庭、伙伴及情感连结成为力量来源。事业上会看到曙光，人缘也变得顺畅，适合修补过去的关系误会。注意：挑战是过度承担他人的压力而忽略自己。" },
+            7: { phase: "思考与重整期", desc: "这是一个需要向内走、整理生命脉络的「宁静年」。你会反思人生的真正意义，人际圈也会在此时重组，关键型贵人往往在此时出现。注意：容易想得太多却缺乏出口，导致孤僻或怀疑主义。" },
+            8: { phase: "结果与成就期", desc: "流年8是责任最集中、成果最具体的收割年份，过去七年的努力都会在此时显现回报。你的影响力和行动力达到顶峰，足以推动艰巨的局面。注意：权力与资源的集中也考验着你的心态，需警惕控制欲、贪心扩张或过劳。" },
+            9: { phase: "总结与完成期", desc: "这是九年循环的终点，不再追求扩张，而是筛选与告别。你需要放下不再滋养你的关系或状态，为下个流年1蓄势。注意：最大的困难是不愿面对答案、拖延结束，导致内耗严重。" }
+        };
+        
+        const CONSTELLATIONS = [
+            { name: "白羊座", start: [3, 21], end: [4, 19] },
+            { name: "金牛座", start: [4, 20], end: [5, 20] },
+            { name: "双子座", start: [5, 21], end: [6, 20] },
+            { name: "巨蟹座", start: [6, 21], end: [7, 22] },
+            { name: "狮子座", start: [7, 23], end: [8, 22] },
+            { name: "处女座", start: [8, 23], end: [9, 22] },
+            { name: "天秤座", start: [9, 23], end: [10, 22] },
+            { name: "天蝎座", start: [10, 23], end: [11, 21] },
+            { name: "射手座", start: [11, 22], end: [12, 21] },
+            { name: "摩羯座", start: [12, 22], end: [1, 19] },
+            { name: "水瓶座", start: [1, 20], end: [2, 18] },
+            { name: "双鱼座", start: [2, 19], end: [3, 20] }
+        ];
+        
+        function reduceToSingle(num) {
+            while (num > 9 && !MASTER_NUMBERS.includes(num)) {
+                let sum = 0;
+                while (num > 0) {
+                    sum += num % 10;
+                    num = Math.floor(num / 10);
+                }
+                num = sum;
+            }
+            return num;
+        }
+        
+        function getDestinyNumber(year, month, day) {
+            let sum = 0;
+            let fullDate = String(year) + String(month).padStart(2, '0') + String(day).padStart(2, '0');
+            for (let char of fullDate) {
+                sum += parseInt(char);
+            }
+            if (MASTER_NUMBERS.includes(sum)) {
+                return sum;
+            }
+            return reduceToSingle(sum);
+        }
+        
+        function getBirthdayNumber(day) {
+            let num = day;
+            return reduceToSingle(num);
+        }
+        
+        function getTalentNumber(year, month, day) {
+            let sum = 0;
+            let fullDate = String(year) + String(month).padStart(2, '0') + String(day).padStart(2, '0');
+            for (let char of fullDate) {
+                sum += parseInt(char);
+            }
+            let firstReduce = sum;
+            while (firstReduce > 9 && !MASTER_NUMBERS.includes(firstReduce)) {
+                let s = 0;
+                while (firstReduce > 0) {
+                    s += firstReduce % 10;
+                    firstReduce = Math.floor(firstReduce / 10);
+                }
+                firstReduce = s;
+            }
+            if (MASTER_NUMBERS.includes(firstReduce)) {
+                let s = 0;
+                while (firstReduce > 0) {
+                    s += firstReduce % 10;
+                    firstReduce = Math.floor(firstReduce / 10);
+                }
+                firstReduce = s;
+            }
+            return firstReduce;
+        }
+        
+        function getConstellationNumber(month, day) {
+            for (let i = 0; i < CONSTELLATIONS.length; i++) {
+                let c = CONSTELLATIONS[i];
+                let [m1, d1] = c.start;
+                let [m2, d2] = c.end;
+                if (c.name === "摩羯座") {
+                    if (month === 12 && day >= d1) return i + 1;
+                    if (month === 1 && day <= d2) return i + 1;
+                } else {
+                    if (month === m1 && day >= d1) return i + 1;
+                    if (month === m2 && day <= d2) return i + 1;
+                }
+            }
+            return 1;
+        }
+        
+        function getCurrentYearNumber(year, month, day) {
+            let currentYear = new Date().getFullYear();
+            let sum = 0;
+            let yearStr = String(currentYear);
+            for (let char of yearStr) {
+                sum += parseInt(char);
+            }
+            sum += month + day;
+            let result = sum;
+            while (result > 9) {
+                let s = 0;
+                while (result > 0) {
+                    s += result % 10;
+                    result = Math.floor(result / 10);
+                }
+                result = s;
+            }
+            return result;
+        }
+        
+        function getDigitCount(year, month, day) {
+            let counts = {1:0,2:0,3:0,4:0,5:0,6:0,7:0,8:0,9:0};
+            let fullDate = String(year) + String(month).padStart(2, '0') + String(day).padStart(2, '0');
+            for (let char of fullDate) {
+                let num = parseInt(char);
+                if (num > 0) counts[num]++;
+            }
+            return counts;
+        }
+        
+        function calculate() {
+            try {
+            const year = parseInt(document.getElementById('year').value);
+            const month = parseInt(document.getElementById('month').value);
+            const day = parseInt(document.getElementById('day').value);
+            
+            if (!year || !month || !day || month < 1 || month > 12 || day < 1 || day > 31) {
+                alert("请输入有效的出生日期");
+                return;
+            }
+            
+            const destinyNum = getDestinyNumber(year, month, day);
+            const birthdayNum = getBirthdayNumber(day);
+            const talentNum = getTalentNumber(year, month, day);
+            const constellationNum = getConstellationNumber(month, day);
+            const currentYearNum = getCurrentYearNumber(year, month, day);
+            
+            let masterNum = null;
+            let tempSum = 0;
+            let fullDate = String(year) + String(month).padStart(2, '0') + String(day).padStart(2, '0');
+            for (let char of fullDate) {
+                tempSum += parseInt(char);
+            }
+            if (MASTER_NUMBERS.includes(tempSum)) {
+                masterNum = tempSum;
+            } else {
+                let reduced = reduceToSingle(tempSum);
+                if (MASTER_NUMBERS.includes(reduced)) {
+                    masterNum = reduced;
+                }
+            }
+            
+            document.getElementById('destinyNum').textContent = destinyNum;
+            document.getElementById('birthdayNum').textContent = birthdayNum;
+            document.getElementById('talentNum').textContent = talentNum;
+            document.getElementById('constellationNum').textContent = constellationNum;
+            document.getElementById('masterNum').textContent = masterNum || "-";
+            document.getElementById('currentYear').textContent = currentYearNum;
+            
+            document.getElementById('yearNum').textContent = currentYearNum;
+            document.getElementById('yearPhase').textContent = YEAR_PREDICTIONS[currentYearNum].phase;
+            document.getElementById('yearDesc').textContent = YEAR_PREDICTIONS[currentYearNum].desc;
+            
+            const counts = getDigitCount(year, month, day);
+            
+            let fullCounts = {...counts};
+            
+            const addCoreNumberToCounts = (num, isMaster) => {
+                if (num > 9) {
+                    let digits = String(num).split('').map(Number);
+                    for (let d of digits) {
+                        if (d >= 1 && d <= 9) fullCounts[d]++;
+                    }
+                    if (isMaster) {
+                        for (let d of digits) {
+                            if (d >= 1 && d <= 9) fullCounts[d]++;
+                        }
+                    }
+                } else if (num >= 1 && num <= 9) {
+                    fullCounts[num]++;
+                    if (isMaster) fullCounts[num]++;
+                }
+            };
+            
+            addCoreNumberToCounts(destinyNum,!!masterNum);
+            addCoreNumberToCounts(birthdayNum,false);
+            addCoreNumberToCounts(talentNum,false);
+            addCoreNumberToCounts(constellationNum,false);
+            
+            const gridContainer = document.getElementById('nineGrid');
+            gridContainer.innerHTML = '';
+            const gridNumbers = [1,4,7,2,5,8,3,6,9];
+            const gridLabels = ["独立","稳定","真理","沟通","自由","目标","创意","责任","理想"];
+            
+            for (let i = 0; i < gridNumbers.length; i++) {
+                const num = gridNumbers[i];
+                const cell = document.createElement('div');
+                cell.className = 'grid-cell';
+                cell.dataset.num = num;
+                cell.dataset.index = i;
+                if (fullCounts[num] > 0) {
+                    cell.classList.add('has-number');
+                    cell.innerHTML = `<div class="num-label">${gridLabels[i]}</div>${num}<div class="count">${'●'.repeat(fullCounts[num])}</div>`;
+                } else {
+                    cell.classList.add('empty');
+                    cell.innerHTML = `<div class="num-label">${gridLabels[i]}</div>${num}`;
+                }
+                gridContainer.appendChild(cell);
+            }
+            
+            setTimeout(() => drawLines(fullCounts), 100);
+            
+            const linesGrid = document.getElementById('linesGrid');
+            linesGrid.innerHTML = '';
+            const activeLines = [];
+            
+            const isActive = (nums) => nums.every(n => fullCounts[n] > 0);
+            
+            const lineDefinitions = [
+                {nums: [1,4,7], key: "1-4-7"},
+                {nums: [2,5,8], key: "2-5-8"},
+                {nums: [3,6,9], key: "3-6-9"},
+                {nums: [1,2,3], key: "1-2-3"},
+                {nums: [4,5,6], key: "4-5-6"},
+                {nums: [7,8,9], key: "7-8-9"},
+                {nums: [1,5,9], key: "1-5-9"},
+                {nums: [3,5,7], key: "3-5-7"}
+            ];
+            
+            for (let def of lineDefinitions) {
+                const line = LINES[def.key];
+                const card = document.createElement('div');
+                card.className = 'line-card';
+                if (isActive(def.nums)) {
+                    card.classList.add('active');
+                }
+                card.innerHTML = `<div class="name">${def.key} - ${line.alt || line.name}</div><div class="desc">${line.desc}</div>`;
+                linesGrid.appendChild(card);
+            }
+            
+            function drawLines(counts) {
+                const svg = document.getElementById('linesSvg');
+                svg.innerHTML = '';
+                const cells = document.querySelectorAll('.grid-cell');
+                if (cells.length === 0) return;
+                
+                const gridWrapper = document.querySelector('.nine-grid-wrapper');
+                const rect = gridWrapper.getBoundingClientRect();
+                const gridContainer = document.getElementById('nineGrid');
+                const gcRect = gridContainer.getBoundingClientRect();
+                const cellWidth = gcRect.width / 3;
+                const cellHeight = gcRect.height / 3;
+                
+                const numToIndex = {1:0, 4:1, 7:2, 2:3, 5:4, 8:5, 3:6, 6:7, 9:8};
+                
+                const lineDefinitionsDraw = [
+                    {nums: [1,4,7], key: "1-4-7"},
+                    {nums: [2,5,8], key: "2-5-8"},
+                    {nums: [3,6,9], key: "3-6-9"},
+                    {nums: [1,2,3], key: "1-2-3"},
+                    {nums: [4,5,6], key: "4-5-6"},
+                    {nums: [7,8,9], key: "7-8-9"},
+                    {nums: [1,5,9], key: "1-5-9"},
+                    {nums: [3,5,7], key: "3-5-7"}
+                ];
+                
+                const colors = {
+                    "1-4-7": "#ff6b6b",
+                    "2-5-8": "#ffa502",
+                    "3-6-9": "#ffd43b",
+                    "1-2-3": "#26de81",
+                    "4-5-6": "#45aaf2",
+                    "7-8-9": "#a55eea",
+                    "1-5-9": "#fa8231",
+                    "3-5-7": "#eb3b5a"
+                };
+                
+                for (let def of lineDefinitionsDraw) {
+                    if (!def.nums.every(n => fullCounts[n] > 0)) continue;
+                    
+                    const points = def.nums.map(n => {
+                        const idx = numToIndex[n];
+                        const row = Math.floor(idx / 3);
+                        const col = idx % 3;
+                        const x = col * cellWidth + cellWidth / 2;
+                        const y = row * cellHeight + cellHeight / 2;
+                        return `${x},${y}`;
+                    }).join(' ');
+                    
+                    const polyline = document.createElementNS('http://www.w3.org/2000/svg', 'polyline');
+                    polyline.setAttribute('points', points);
+                    polyline.setAttribute('fill', 'none');
+                    polyline.setAttribute('stroke', colors[def.key]);
+                    polyline.setAttribute('stroke-width', '3');
+                    polyline.setAttribute('stroke-linecap', 'round');
+                    polyline.setAttribute('stroke-linejoin', 'round');
+                    polyline.setAttribute('opacity', '0.8');
+                    svg.appendChild(polyline);
+                }
+            }
+            
+            const missingGrid = document.getElementById('missingGrid');
+            missingGrid.innerHTML = '';
+            let missingNumbers = [];
+            for (let i = 1; i <= 9; i++) {
+                if (fullCounts[i] === 0) {
+                    missingNumbers.push(i);
+                }
+            }
+            
+            if (missingNumbers.length === 0) {
+                document.getElementById('missingSection').style.display = 'none';
+            } else {
+                document.getElementById('missingSection').style.display = 'block';
+                for (let num of missingNumbers) {
+                    const trait = MISSING_TRAITS[num];
+                    const card = document.createElement('div');
+                    card.className = 'missing-card';
+                    card.innerHTML = `<div class="num">缺 ${num}</div><div class="advice">${trait.advice}</div>`;
+                    missingGrid.appendChild(card);
+                }
+            }
+            
+            const traitsGrid = document.getElementById('traitsGrid');
+            traitsGrid.innerHTML = '';
+            
+            let mainNums = new Set();
+            mainNums.add(destinyNum);
+            if (birthdayNum !== destinyNum) mainNums.add(birthdayNum);
+            if (constellationNum !== destinyNum && constellationNum !== birthdayNum) mainNums.add(constellationNum);
+            
+            const talentTrait = NUM_TRAITS[talentNum];
+            const talentCard = document.createElement('div');
+            talentCard.className = 'trait-card';
+            talentCard.innerHTML = `<div class="num" style="color:${talentTrait.color}">${talentNum} (天赋数)</div><div class="title">${talentTrait.title}</div><div class="content">${talentTrait.content}</div>`;
+            traitsGrid.appendChild(talentCard);
+            
+            for (let num of mainNums) {
+                if (MASTER_NUMBERS.includes(num)) {
+                    const trait = MASTER_TRAITS[num] || NUM_TRAITS[num];
+                    const card = document.createElement('div');
+                    card.className = 'trait-card';
+                    card.innerHTML = `<div class="num" style="color:${trait.color}">${num}</div><div class="title">${trait.title}</div><div class="content">${trait.content}</div>`;
+                    traitsGrid.appendChild(card);
+                } else if (num <= 9) {
+                    const trait = NUM_TRAITS[num];
+                    const card = document.createElement('div');
+                    card.className = 'trait-card';
+                    card.innerHTML = `<div class="num" style="color:${trait.color}">${num}</div><div class="title">${trait.title}</div><div class="content">${trait.content}</div>`;
+                    traitsGrid.appendChild(card);
+                }
+            }
+            
+            for (let num = 1; num <= 9; num++) {
+                if (fullCounts[num] >= 3 && !mainNums.has(num)) {
+                    const trait = NUM_TRAITS[num];
+                    const card = document.createElement('div');
+                    card.className = 'trait-card';
+                    card.innerHTML = `<div class="num" style="color:${trait.color}">${num} (出现${fullCounts[num]}次)</div><div class="title">${trait.title}</div><div class="content">${trait.content}</div>`;
+                    traitsGrid.appendChild(card);
+                }
+            }
+            
+            document.getElementById('result').classList.add('active');
+            } catch (e) {
+                console.error(e);
+                alert("计算出错: " + e.message);
+            }
+        }
+    </script>
+</body>
+</html>
