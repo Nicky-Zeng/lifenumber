@@ -505,7 +505,15 @@
         
         function getBirthdayNumber(day) {
             let num = day;
-            return reduceToSingle(num);
+            while (num > 9) {
+                let s = 0;
+                while (num > 0) {
+                    s += num % 10;
+                    num = Math.floor(num / 10);
+                }
+                num = s;
+            }
+            return num;
         }
         
         function getTalentNumber(year, month, day) {
@@ -531,19 +539,29 @@
         }
         
         function getConstellationNumber(month, day) {
+            let constellationOrder = 1;
             for (let i = 0; i < CONSTELLATIONS.length; i++) {
                 let c = CONSTELLATIONS[i];
                 let [m1, d1] = c.start;
                 let [m2, d2] = c.end;
                 if (c.name === "摩羯座") {
-                    if (month === 12 && day >= d1) return i + 1;
-                    if (month === 1 && day <= d2) return i + 1;
+                    if (month === 12 && day >= d1) { constellationOrder = i + 1; break; }
+                    if (month === 1 && day <= d2) { constellationOrder = i + 1; break; }
                 } else {
-                    if (month === m1 && day >= d1) return i + 1;
-                    if (month === m2 && day <= d2) return i + 1;
+                    if (month === m1 && day >= d1) { constellationOrder = i + 1; break; }
+                    if (month === m2 && day <= d2) { constellationOrder = i + 1; break; }
                 }
             }
-            return 1;
+            let num = constellationOrder;
+            while (num > 9) {
+                let s = 0;
+                while (num > 0) {
+                    s += num % 10;
+                    num = Math.floor(num / 10);
+                }
+                num = s;
+            }
+            return num;
         }
         
         function getCurrentYearNumber(year, month, day) {
