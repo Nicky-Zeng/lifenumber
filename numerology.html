@@ -527,7 +527,7 @@
             } else {
                 digits.push(talentSum);
             }
-            return digits;
+            return [...new Set(digits)];
         }
         
         function getConstellationNumber(month, day) {
@@ -784,9 +784,14 @@
             traitsGrid.innerHTML = '';
             
             let mainNums = new Set();
-            mainNums.add(destinyNum);
             if (birthdayNum !== destinyNum) mainNums.add(birthdayNum);
             if (constellationNum !== destinyNum && constellationNum !== birthdayNum) mainNums.add(constellationNum);
+            
+            const destinyTrait = NUM_TRAITS[destinyNum];
+            const destinyCard = document.createElement('div');
+            destinyCard.className = 'trait-card';
+            destinyCard.innerHTML = `<div class="num" style="color:${destinyTrait.color}">${destinyNum} (命运数)</div><div class="title">${destinyTrait.title}</div><div class="content">${destinyTrait.content}</div>`;
+            traitsGrid.appendChild(destinyCard);
             
             for (let i = 0; i < talentDigits.length; i++) {
                 const td = talentDigits[i];
@@ -797,20 +802,20 @@
                 traitsGrid.appendChild(talentCard);
             }
             
+            if (masterNum) {
+                const masterTrait = MASTER_TRAITS[masterNum];
+                const masterCard = document.createElement('div');
+                masterCard.className = 'trait-card';
+                masterCard.innerHTML = `<div class="num" style="color:${masterTrait.color}">${masterNum} (卓越数)</div><div class="title">${masterTrait.title}</div><div class="content">${masterTrait.content}</div>`;
+                traitsGrid.appendChild(masterCard);
+            }
+            
             for (let num of mainNums) {
-                if (MASTER_NUMBERS.includes(num)) {
-                    const trait = MASTER_TRAITS[num] || NUM_TRAITS[num];
-                    const card = document.createElement('div');
-                    card.className = 'trait-card';
-                    card.innerHTML = `<div class="num" style="color:${trait.color}">${num}</div><div class="title">${trait.title}</div><div class="content">${trait.content}</div>`;
-                    traitsGrid.appendChild(card);
-                } else if (num <= 9) {
-                    const trait = NUM_TRAITS[num];
-                    const card = document.createElement('div');
-                    card.className = 'trait-card';
-                    card.innerHTML = `<div class="num" style="color:${trait.color}">${num}</div><div class="title">${trait.title}</div><div class="content">${trait.content}</div>`;
-                    traitsGrid.appendChild(card);
-                }
+                const trait = NUM_TRAITS[num];
+                const card = document.createElement('div');
+                card.className = 'trait-card';
+                card.innerHTML = `<div class="num" style="color:${trait.color}">${num}</div><div class="title">${trait.title}</div><div class="content">${trait.content}</div>`;
+                traitsGrid.appendChild(card);
             }
             
             for (let num = 1; num <= 9; num++) {
