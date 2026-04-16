@@ -802,7 +802,7 @@
                 traitsGrid.appendChild(talentCard);
             }
             
-            if (masterNum) {
+            if (masterNum && MASTER_TRAITS[masterNum]) {
                 const masterTrait = MASTER_TRAITS[masterNum];
                 const masterCard = document.createElement('div');
                 masterCard.className = 'trait-card';
