@@ -490,16 +490,17 @@
             return num;
         }
         
-        function getDestinyNumber(year, month, day) {
-            let sum = 0;
-            let fullDate = String(year) + String(month).padStart(2, '0') + String(day).padStart(2, '0');
-            for (let char of fullDate) {
-                sum += parseInt(char);
+        function getDestinyNumberFromTalent(talentSum) {
+            let num = talentSum;
+            while (num > 9) {
+                let s = 0;
+                while (num > 0) {
+                    s += num % 10;
+                    num = Math.floor(num / 10);
+                }
+                num = s;
             }
-            if (MASTER_NUMBERS.includes(sum)) {
-                return sum;
-            }
-            return reduceToSingle(sum);
+            return num;
         }
         
         function getBirthdayNumber(day) {
@@ -513,24 +514,20 @@
             for (let char of fullDate) {
                 sum += parseInt(char);
             }
-            let firstReduce = sum;
-            while (firstReduce > 9 && !MASTER_NUMBERS.includes(firstReduce)) {
-                let s = 0;
-                while (firstReduce > 0) {
-                    s += firstReduce % 10;
-                    firstReduce = Math.floor(firstReduce / 10);
-                }
-                firstReduce = s;
+            return sum;
+        }
+        
+        function getTalentDigits(talentSum) {
+            let digits = [];
+            if (talentSum > 9) {
+                let first = Math.floor(talentSum / 10);
+                let second = talentSum % 10;
+                if (first > 0) digits.push(first);
+                if (second > 0) digits.push(second);
+            } else {
+                digits.push(talentSum);
             }
-            if (MASTER_NUMBERS.includes(firstReduce)) {
-                let s = 0;
-                while (firstReduce > 0) {
-                    s += firstReduce % 10;
-                    firstReduce = Math.floor(firstReduce / 10);
-                }
-                firstReduce = s;
-            }
-            return firstReduce;
+            return digits;
         }
         
         function getConstellationNumber(month, day) {
@@ -590,22 +587,19 @@
                 return;
             }
             
-            const destinyNum = getDestinyNumber(year, month, day);
+            const talentSum = getTalentNumber(year, month, day);
+            const talentDigits = getTalentDigits(talentSum);
+            
+            const destinyNum = getDestinyNumberFromTalent(talentSum);
             const birthdayNum = getBirthdayNumber(day);
-            const talentNum = getTalentNumber(year, month, day);
             const constellationNum = getConstellationNumber(month, day);
             const currentYearNum = getCurrentYearNumber(year, month, day);
             
             let masterNum = null;
-            let tempSum = 0;
-            let fullDate = String(year) + String(month).padStart(2, '0') + String(day).padStart(2, '0');
-            for (let char of fullDate) {
-                tempSum += parseInt(char);
-            }
-            if (MASTER_NUMBERS.includes(tempSum)) {
-                masterNum = tempSum;
+            if (MASTER_NUMBERS.includes(talentSum)) {
+                masterNum = talentSum;
             } else {
-                let reduced = reduceToSingle(tempSum);
+                let reduced = reduceToSingle(talentSum);
                 if (MASTER_NUMBERS.includes(reduced)) {
                     masterNum = reduced;
                 }
@@ -613,7 +607,7 @@
             
             document.getElementById('destinyNum').textContent = destinyNum;
             document.getElementById('birthdayNum').textContent = birthdayNum;
-            document.getElementById('talentNum').textContent = talentNum;
+            document.getElementById('talentNum').textContent = talentDigits.join('');
             document.getElementById('constellationNum').textContent = constellationNum;
             document.getElementById('masterNum').textContent = masterNum || "-";
             document.getElementById('currentYear').textContent = currentYearNum;
@@ -645,7 +639,11 @@
             
             addCoreNumberToCounts(destinyNum,!!masterNum);
             addCoreNumberToCounts(birthdayNum,false);
-            addCoreNumberToCounts(talentNum,false);
+            if (Array.isArray(talentDigits)) {
+                for (let d of talentDigits) {
+                    if (d >= 1 && d <= 9) fullCounts[d]++;
+                }
+            }
             addCoreNumberToCounts(constellationNum,false);
             
             const gridContainer = document.getElementById('nineGrid');
@@ -790,10 +788,11 @@
             if (birthdayNum !== destinyNum) mainNums.add(birthdayNum);
             if (constellationNum !== destinyNum && constellationNum !== birthdayNum) mainNums.add(constellationNum);
             
-            const talentTrait = NUM_TRAITS[talentNum];
+            const firstTalent = talentDigits[0] || talentSum;
+            const talentTrait = NUM_TRAITS[firstTalent];
             const talentCard = document.createElement('div');
             talentCard.className = 'trait-card';
-            talentCard.innerHTML = `<div class="num" style="color:${talentTrait.color}">${talentNum} (天赋数)</div><div class="title">${talentTrait.title}</div><div class="content">${talentTrait.content}</div>`;
+            talentCard.innerHTML = `<div class="num" style="color:${talentTrait.color}">${talentDigits.join('')} (天赋数)</div><div class="title">${talentTrait.title}</div><div class="content">${talentTrait.content}</div>`;
             traitsGrid.appendChild(talentCard);
             
             for (let num of mainNums) {
