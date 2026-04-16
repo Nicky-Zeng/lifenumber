@@ -787,7 +787,7 @@
             if (birthdayNum !== destinyNum) mainNums.add(birthdayNum);
             if (constellationNum !== destinyNum && constellationNum !== birthdayNum) mainNums.add(constellationNum);
             
-            const destinyTrait = NUM_TRAITS[destinyNum];
+            const destinyTrait = NUM_TRAITS[destinyNum] || NUM_TRAITS[1];
             const destinyCard = document.createElement('div');
             destinyCard.className = 'trait-card';
             destinyCard.innerHTML = `<div class="num" style="color:${destinyTrait.color}">${destinyNum} (命运数)</div><div class="title">${destinyTrait.title}</div><div class="content">${destinyTrait.content}</div>`;
@@ -795,7 +795,7 @@
             
             for (let i = 0; i < talentDigits.length; i++) {
                 const td = talentDigits[i];
-                const talentTrait = NUM_TRAITS[td];
+                const talentTrait = NUM_TRAITS[td] || NUM_TRAITS[1];
                 const talentCard = document.createElement('div');
                 talentCard.className = 'trait-card';
                 talentCard.innerHTML = `<div class="num" style="color:${talentTrait.color}">${td} (天赋数${i+1})</div><div class="title">${talentTrait.title}</div><div class="content">${talentTrait.content}</div>`;
@@ -811,7 +811,7 @@
             }
             
             for (let num of mainNums) {
-                const trait = NUM_TRAITS[num];
+                const trait = NUM_TRAITS[num] || NUM_TRAITS[1];
                 const card = document.createElement('div');
                 card.className = 'trait-card';
                 card.innerHTML = `<div class="num" style="color:${trait.color}">${num}</div><div class="title">${trait.title}</div><div class="content">${trait.content}</div>`;
@@ -820,7 +820,7 @@
             
             for (let num = 1; num <= 9; num++) {
                 if (fullCounts[num] >= 3 && !mainNums.has(num)) {
-                    const trait = NUM_TRAITS[num];
+                    const trait = NUM_TRAITS[num] || NUM_TRAITS[1];
                     const card = document.createElement('div');
                     card.className = 'trait-card';
                     card.innerHTML = `<div class="num" style="color:${trait.color}">${num} (出现${fullCounts[num]}次)</div><div class="title">${trait.title}</div><div class="content">${trait.content}</div>`;
