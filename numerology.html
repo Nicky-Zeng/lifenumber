@@ -607,7 +607,7 @@
             
             document.getElementById('destinyNum').textContent = destinyNum;
             document.getElementById('birthdayNum').textContent = birthdayNum;
-            document.getElementById('talentNum').textContent = talentDigits.join('');
+            document.getElementById('talentNum').textContent = talentDigits.join(' 和 ');
             document.getElementById('constellationNum').textContent = constellationNum;
             document.getElementById('masterNum').textContent = masterNum || "-";
             document.getElementById('currentYear').textContent = currentYearNum;
@@ -788,12 +788,14 @@
             if (birthdayNum !== destinyNum) mainNums.add(birthdayNum);
             if (constellationNum !== destinyNum && constellationNum !== birthdayNum) mainNums.add(constellationNum);
             
-            const firstTalent = talentDigits[0] || talentSum;
-            const talentTrait = NUM_TRAITS[firstTalent];
-            const talentCard = document.createElement('div');
-            talentCard.className = 'trait-card';
-            talentCard.innerHTML = `<div class="num" style="color:${talentTrait.color}">${talentDigits.join('')} (天赋数)</div><div class="title">${talentTrait.title}</div><div class="content">${talentTrait.content}</div>`;
-            traitsGrid.appendChild(talentCard);
+            for (let i = 0; i < talentDigits.length; i++) {
+                const td = talentDigits[i];
+                const talentTrait = NUM_TRAITS[td];
+                const talentCard = document.createElement('div');
+                talentCard.className = 'trait-card';
+                talentCard.innerHTML = `<div class="num" style="color:${talentTrait.color}">${td} (天赋数${i+1})</div><div class="title">${talentTrait.title}</div><div class="content">${talentTrait.content}</div>`;
+                traitsGrid.appendChild(talentCard);
+            }
             
             for (let num of mainNums) {
                 if (MASTER_NUMBERS.includes(num)) {
